@@ -1,0 +1,1515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NeuroNest — Smart Habit & Focus Ecosystem</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #06070d;
+    --surface: #0e1120;
+    --surface2: #141829;
+    --surface3: #1a1f35;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.12);
+    --accent: #7c6af7;
+    --accent2: #4fd1c5;
+    --accent3: #f6c90e;
+    --accent4: #ff6b9d;
+    --text: #e8eaf6;
+    --muted: #7b82a0;
+    --glow: rgba(124,106,247,0.2);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    overflow-x: hidden;
+    line-height: 1.6;
+  }
+  body::before {
+    content:'';
+    position:fixed; inset:0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events:none; z-index:0;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1rem 4rem;
+    background: rgba(6,7,13,0.8);
+    backdrop-filter: blur(24px);
+    border-bottom: 1px solid var(--border);
+    transition: all 0.3s;
+  }
+  nav.scrolled { padding: 0.75rem 4rem; background: rgba(6,7,13,0.95); }
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800; font-size: 1.5rem;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    letter-spacing: -0.5px; text-decoration: none;
+  }
+  .logo span { color: var(--accent3); -webkit-text-fill-color: var(--accent3); }
+  nav ul { list-style: none; display: flex; gap: 2rem; align-items: center; }
+  nav ul a {
+    text-decoration: none; color: var(--muted);
+    font-size: 0.875rem; font-weight: 500;
+    transition: color 0.2s;
+  }
+  nav ul a:hover { color: var(--text); }
+  .nav-cta {
+    background: var(--accent) !important;
+    color: #fff !important;
+    padding: 0.5rem 1.3rem;
+    border-radius: 8px;
+  }
+  .nav-cta:hover { opacity: 0.85; color: #fff !important; }
+
+  /* ANNOUNCEMENT BAR */
+  .announce-bar {
+    background: linear-gradient(90deg, rgba(124,106,247,0.15), rgba(79,209,197,0.1), rgba(124,106,247,0.15));
+    border-bottom: 1px solid rgba(124,106,247,0.2);
+    text-align: center;
+    padding: 0.6rem 1rem;
+    font-size: 0.8rem;
+    color: var(--accent2);
+    position: relative; z-index: 99; margin-top: 0;
+  }
+  .announce-bar a { color: var(--accent3); text-decoration: underline; }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center;
+    padding: 10rem 2rem 5rem;
+    position: relative; overflow: hidden;
+  }
+  .hero-orb {
+    position: absolute; border-radius: 50%;
+    filter: blur(90px); opacity: 0.3;
+    animation: pulse 7s ease-in-out infinite;
+    pointer-events: none;
+  }
+  .orb1 { width: 700px; height: 700px; background: var(--accent); top: -150px; left: -150px; }
+  .orb2 { width: 500px; height: 500px; background: var(--accent2); bottom: -80px; right: -80px; animation-delay: 2.5s; }
+  .orb3 { width: 350px; height: 350px; background: var(--accent3); top: 35%; left: 38%; animation-delay: 5s; }
+  @keyframes pulse {
+    0%,100% { transform: scale(1); opacity:0.25; }
+    50% { transform: scale(1.12); opacity:0.4; }
+  }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: rgba(124,106,247,0.1);
+    border: 1px solid rgba(124,106,247,0.25);
+    border-radius: 50px;
+    padding: 0.4rem 1.1rem;
+    font-size: 0.78rem; color: var(--accent2);
+    font-weight: 500; margin-bottom: 2rem;
+    animation: fadeUp 0.6s ease both;
+    position: relative; z-index: 1;
+  }
+  .hero-badge .dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--accent2);
+    animation: blink 1.5s ease infinite;
+    box-shadow: 0 0 6px var(--accent2);
+  }
+  @keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(3rem, 7vw, 6.5rem);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -2px;
+    margin-bottom: 1.5rem;
+    position: relative; z-index: 1;
+    animation: fadeUp 0.7s ease 0.1s both;
+  }
+  h1 .gradient-text {
+    background: linear-gradient(135deg, var(--accent), var(--accent2), var(--accent3));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-size: 200%;
+    animation: shimmer 4s linear infinite;
+  }
+  @keyframes shimmer { 0%{background-position:0%} 100%{background-position:200%} }
+  .hero-sub {
+    font-size: clamp(1rem, 2vw, 1.2rem);
+    color: var(--muted);
+    max-width: 580px;
+    margin: 0 auto 2.5rem;
+    font-weight: 300;
+    line-height: 1.75;
+    position: relative; z-index: 1;
+    animation: fadeUp 0.7s ease 0.2s both;
+  }
+  .hero-actions {
+    display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;
+    position: relative; z-index: 1;
+    animation: fadeUp 0.7s ease 0.3s both;
+  }
+  .btn-primary {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: linear-gradient(135deg, var(--accent), #5a4ed4);
+    color: #fff; text-decoration: none;
+    padding: 0.85rem 2rem; border-radius: 12px;
+    font-weight: 600; font-size: 1rem;
+    box-shadow: 0 8px 32px rgba(124,106,247,0.35);
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: none; cursor: pointer;
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 14px 44px rgba(124,106,247,0.5); }
+  .btn-secondary {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    color: var(--text); text-decoration: none;
+    padding: 0.85rem 2rem; border-radius: 12px;
+    font-weight: 500; font-size: 1rem;
+    transition: border-color 0.2s, background 0.2s;
+    cursor: pointer;
+  }
+  .btn-secondary:hover { border-color: var(--accent); background: var(--surface2); }
+
+  /* STATS */
+  .stats {
+    display: flex; justify-content: center; gap: 3.5rem; flex-wrap: wrap;
+    margin-top: 4rem;
+    position: relative; z-index: 1;
+    animation: fadeUp 0.7s ease 0.45s both;
+  }
+  .stat { text-align: center; }
+  .stat-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 2.2rem; font-weight: 800;
+    background: linear-gradient(135deg, var(--accent2), var(--accent));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .stat-label { font-size: 0.78rem; color: var(--muted); font-weight: 400; margin-top: 0.2rem; }
+
+  /* DASHBOARD PREVIEW */
+  .preview-section {
+    padding: 2rem 2rem 8rem;
+    display: flex; justify-content: center;
+    position: relative;
+  }
+  .dashboard-preview {
+    width: 100%; max-width: 1050px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 50px 120px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.04), 0 0 80px rgba(124,106,247,0.08);
+    animation: fadeUp 0.8s ease 0.2s both;
+    position: relative;
+  }
+  .dash-titlebar {
+    background: var(--surface2);
+    padding: 0.85rem 1.5rem;
+    display: flex; align-items: center; gap: 0.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .dot-red { width:11px;height:11px;border-radius:50%;background:#ff5f57; }
+  .dot-yellow { width:11px;height:11px;border-radius:50%;background:#febc2e; }
+  .dot-green { width:11px;height:11px;border-radius:50%;background:#28c840; }
+  .dash-url {
+    margin-left: 1rem;
+    background: rgba(255,255,255,0.05);
+    border-radius: 6px; padding: 0.3rem 1rem;
+    font-size: 0.72rem; color: var(--muted);
+    flex: 1; max-width: 300px;
+  }
+  .dash-body {
+    padding: 1.5rem;
+    display: grid;
+    grid-template-columns: 210px 1fr;
+    gap: 1.5rem;
+    min-height: 420px;
+  }
+  .dash-sidebar {
+    background: var(--surface2);
+    border-radius: 16px;
+    padding: 1.2rem;
+    display: flex; flex-direction: column; gap: 0.4rem;
+  }
+  .user-info {
+    display: flex; align-items: center; gap: 0.7rem;
+    margin-bottom: 1rem; padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 0.82rem;
+  }
+  .user-name { font-size: 0.82rem; font-weight: 600; }
+  .user-level { font-size: 0.68rem; color: var(--accent2); }
+  .nav-item {
+    display: flex; align-items: center; gap: 0.65rem;
+    padding: 0.55rem 0.8rem; border-radius: 8px;
+    font-size: 0.78rem; color: var(--muted);
+    cursor: pointer; transition: all 0.2s;
+  }
+  .nav-item:hover, .nav-item.active { background: rgba(124,106,247,0.12); color: var(--text); }
+  .nav-item.active { color: var(--accent); }
+  .dash-main { display: flex; flex-direction: column; gap: 1rem; }
+  .dash-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+  .stat-card {
+    background: var(--surface2); border-radius: 12px;
+    padding: 1rem 1.1rem; border: 1px solid var(--border);
+    transition: border-color 0.2s;
+  }
+  .stat-card:hover { border-color: rgba(124,106,247,0.3); }
+  .stat-card-label { font-size: 0.67rem; color: var(--muted); margin-bottom: 0.3rem; text-transform: uppercase; letter-spacing: 0.06em; }
+  .stat-card-value { font-family: 'Syne', sans-serif; font-size: 1.65rem; font-weight: 700; }
+  .stat-card-sub { font-size: 0.67rem; color: var(--accent2); margin-top: 0.2rem; }
+  .v1 { color: var(--accent2); }
+  .v2 { color: var(--accent3); }
+  .v3 { color: var(--accent); }
+  .chart-card {
+    background: var(--surface2); border-radius: 12px;
+    padding: 1.2rem; border: 1px solid var(--border); flex: 1;
+  }
+  .chart-title { font-size: 0.78rem; color: var(--muted); margin-bottom: 1rem; font-weight: 500; }
+  .bar-chart { display: flex; align-items: flex-end; gap: 6px; height: 80px; }
+  .bar {
+    flex: 1; border-radius: 4px 4px 0 0;
+    background: linear-gradient(to top, var(--accent), var(--accent2));
+    opacity: 0.7; transition: opacity 0.2s;
+    animation: barGrow 1s ease both;
+  }
+  .bar:hover { opacity: 1; }
+  @keyframes barGrow { from{transform:scaleY(0);transform-origin:bottom;} }
+  .bar:nth-child(1){height:42%;animation-delay:0.05s}
+  .bar:nth-child(2){height:65%;animation-delay:0.1s}
+  .bar:nth-child(3){height:52%;animation-delay:0.15s}
+  .bar:nth-child(4){height:82%;animation-delay:0.2s}
+  .bar:nth-child(5){height:58%;animation-delay:0.25s}
+  .bar:nth-child(6){height:92%;animation-delay:0.3s}
+  .bar:nth-child(7){height:76%;animation-delay:0.35s; background: linear-gradient(to top, var(--accent3), rgba(246,201,14,0.5));}
+  .bar-labels { display: flex; gap: 6px; margin-top: 0.4rem; }
+  .bar-labels span { flex: 1; text-align: center; font-size: 0.6rem; color: var(--muted); }
+  .timer-card {
+    background: linear-gradient(135deg, rgba(124,106,247,0.12), rgba(79,209,197,0.07));
+    border-radius: 12px; padding: 1.1rem; border: 1px solid rgba(124,106,247,0.18);
+    display: flex; align-items: center; gap: 1rem;
+  }
+  .timer-ring {
+    width: 62px; height: 62px; border-radius: 50%;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-right-color: var(--accent2);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif; font-size: 0.85rem; font-weight: 700;
+    animation: spin 3s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .timer-info { flex: 1; }
+  .timer-info h4 { font-size: 0.82rem; margin-bottom: 0.2rem; }
+  .timer-info p { font-size: 0.68rem; color: var(--muted); }
+  .progress-bar-bg { background: var(--border); border-radius: 4px; height: 4px; margin-top: 0.6rem; }
+  .progress-bar-fill { background: linear-gradient(to right, var(--accent), var(--accent2)); border-radius: 4px; height: 4px; width: 62%; }
+
+  /* SECTIONS */
+  section { padding: 6rem 2rem; position: relative; }
+  .section-label {
+    text-align: center;
+    font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.18em;
+    color: var(--accent); font-weight: 600;
+    margin-bottom: 0.9rem;
+  }
+  h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(1.9rem, 4vw, 3.1rem);
+    font-weight: 800;
+    text-align: center;
+    letter-spacing: -1px;
+    margin-bottom: 0.9rem;
+  }
+  .section-sub {
+    text-align: center; color: var(--muted);
+    max-width: 500px; margin: 0 auto 4rem;
+    font-size: 1rem; line-height: 1.75;
+  }
+
+  /* FEATURES */
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.4rem;
+    max-width: 1120px;
+    margin: 0 auto;
+  }
+  .feature-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 1.8rem;
+    transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
+    position: relative; overflow: hidden;
+  }
+  .feature-card::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, var(--glow), transparent);
+    opacity: 0; transition: opacity 0.3s;
+  }
+  .feature-card:hover { transform: translateY(-5px); border-color: rgba(124,106,247,0.3); box-shadow: 0 24px 64px rgba(0,0,0,0.35); }
+  .feature-card:hover::before { opacity: 1; }
+  .feature-icon {
+    width: 50px; height: 50px; border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem; margin-bottom: 1.1rem;
+  }
+  .icon-purple { background: rgba(124,106,247,0.14); }
+  .icon-teal { background: rgba(79,209,197,0.11); }
+  .icon-yellow { background: rgba(246,201,14,0.11); }
+  .icon-pink { background: rgba(255,107,157,0.11); }
+  .icon-blue { background: rgba(99,179,237,0.11); }
+  .icon-green { background: rgba(72,187,120,0.11); }
+  .icon-orange { background: rgba(246,120,60,0.11); }
+  .icon-red { background: rgba(255,80,80,0.11); }
+  .feature-card h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.1rem; font-weight: 700;
+    margin-bottom: 0.55rem; position: relative; z-index:1;
+  }
+  .feature-card p {
+    color: var(--muted); font-size: 0.88rem;
+    line-height: 1.7; position: relative; z-index:1;
+  }
+  .feature-card .feature-link {
+    display: inline-flex; align-items: center; gap: 0.35rem;
+    color: var(--accent); font-size: 0.8rem; font-weight: 500;
+    text-decoration: none; margin-top: 0.9rem;
+    transition: gap 0.2s; position: relative; z-index: 1;
+  }
+  .feature-card .feature-link:hover { gap: 0.6rem; }
+
+  /* INTEGRATIONS */
+  .integrations-section { background: var(--surface); }
+  .integrations-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem; max-width: 900px; margin: 0 auto;
+  }
+  .integration-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem 1rem;
+    text-align: center;
+    text-decoration: none;
+    color: var(--text);
+    transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
+  }
+  .integration-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(124,106,247,0.35);
+    box-shadow: 0 16px 40px rgba(0,0,0,0.3);
+  }
+  .integration-icon { font-size: 2.2rem; display: block; margin-bottom: 0.6rem; }
+  .integration-name { font-size: 0.82rem; font-weight: 600; }
+  .integration-type { font-size: 0.68rem; color: var(--muted); margin-top: 0.2rem; }
+  .integration-badge {
+    display: inline-block;
+    background: rgba(79,209,197,0.12);
+    color: var(--accent2);
+    border-radius: 50px;
+    padding: 0.15rem 0.55rem;
+    font-size: 0.62rem; font-weight: 600;
+    margin-top: 0.4rem;
+    border: 1px solid rgba(79,209,197,0.2);
+  }
+
+  /* HOW IT WORKS */
+  .hiw-bg { background: var(--surface); }
+  .steps { display: flex; flex-direction: column; gap: 2rem; max-width: 680px; margin: 0 auto; }
+  .step {
+    display: flex; gap: 1.5rem; align-items: flex-start;
+    opacity: 0; transform: translateX(-24px);
+    transition: all 0.55s ease;
+  }
+  .step.visible { opacity:1; transform:translateX(0); }
+  .step-num {
+    flex-shrink: 0;
+    width: 48px; height: 48px; border-radius: 14px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.05rem;
+  }
+  .step h3 { font-family:'Syne',sans-serif; font-size:1.05rem; font-weight:700; margin-bottom:0.4rem; }
+  .step p { color: var(--muted); font-size: 0.88rem; line-height: 1.7; }
+
+  /* GAMIFICATION */
+  .badges-row {
+    display: flex; justify-content: center; flex-wrap: wrap; gap: 1.4rem;
+    margin-top: 3rem;
+  }
+  .badge-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 1.4rem 1.8rem;
+    text-align: center;
+    width: 155px;
+    transition: transform 0.3s, box-shadow 0.3s;
+    cursor: default;
+  }
+  .badge-card:hover { transform: translateY(-5px) rotate(-1.5deg); box-shadow: 0 22px 44px rgba(0,0,0,0.45); }
+  .badge-emoji { font-size: 2.4rem; display: block; margin-bottom: 0.7rem; }
+  .badge-name { font-family:'Syne',sans-serif; font-size:0.82rem; font-weight:700; margin-bottom:0.3rem; }
+  .badge-desc { font-size:0.68rem; color:var(--muted); }
+
+  /* TESTIMONIALS */
+  .testimonials-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.4rem; max-width: 1000px; margin: 0 auto;
+  }
+  .testimonial-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 1.8rem;
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+  .testimonial-card:hover { transform: translateY(-4px); box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
+  .stars { color: var(--accent3); font-size: 0.85rem; margin-bottom: 1rem; letter-spacing: 2px; }
+  .testimonial-text { color: var(--muted); font-size: 0.9rem; line-height: 1.7; margin-bottom: 1.2rem; font-style: italic; }
+  .testimonial-author { display: flex; align-items: center; gap: 0.75rem; }
+  .t-avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 0.78rem;
+  }
+  .t-name { font-size: 0.85rem; font-weight: 600; }
+  .t-role { font-size: 0.7rem; color: var(--muted); }
+
+  /* PRICING */
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.5rem; max-width: 900px; margin: 0 auto;
+  }
+  .pricing-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 2rem;
+    text-align: center;
+    transition: transform 0.3s, box-shadow 0.3s;
+    position: relative;
+  }
+  .pricing-card.featured {
+    border-color: rgba(124,106,247,0.45);
+    background: linear-gradient(135deg, rgba(124,106,247,0.08), rgba(79,209,197,0.04));
+    box-shadow: 0 0 40px rgba(124,106,247,0.12);
+  }
+  .pricing-card:hover { transform: translateY(-4px); box-shadow: 0 24px 60px rgba(0,0,0,0.35); }
+  .pricing-badge {
+    position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff; font-size: 0.7rem; font-weight: 700;
+    padding: 0.3rem 1rem; border-radius: 50px;
+    letter-spacing: 0.05em;
+  }
+  .pricing-plan { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem; }
+  .pricing-price {
+    font-family: 'Syne', sans-serif;
+    font-size: 3rem; font-weight: 800;
+    margin: 0.8rem 0 0.3rem;
+    background: linear-gradient(135deg, var(--accent2), var(--accent));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .pricing-period { font-size: 0.8rem; color: var(--muted); margin-bottom: 1.5rem; }
+  .pricing-features { list-style: none; text-align: left; margin-bottom: 1.8rem; }
+  .pricing-features li {
+    font-size: 0.85rem; color: var(--muted);
+    padding: 0.45rem 0;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 0.6rem;
+  }
+  .pricing-features li:last-child { border-bottom: none; }
+  .pricing-features li::before { content: '✓'; color: var(--accent2); font-weight: 700; flex-shrink: 0; }
+  .pricing-features li.disabled { opacity: 0.4; }
+  .pricing-features li.disabled::before { content: '×'; color: var(--muted); }
+
+  /* RESOURCES / LINKS SECTION */
+  .resources-section { background: var(--surface); }
+  .resources-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.2rem; max-width: 1000px; margin: 0 auto;
+  }
+  .resource-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.4rem;
+    text-decoration: none;
+    color: var(--text);
+    transition: transform 0.25s, border-color 0.25s;
+    display: block;
+  }
+  .resource-card:hover { transform: translateY(-3px); border-color: rgba(124,106,247,0.3); }
+  .resource-card-top { display: flex; align-items: center; gap: 0.7rem; margin-bottom: 0.75rem; }
+  .resource-icon { font-size: 1.4rem; }
+  .resource-label {
+    font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--accent); font-weight: 600;
+  }
+  .resource-name { font-family: 'Syne', sans-serif; font-size: 0.95rem; font-weight: 700; margin-bottom: 0.35rem; }
+  .resource-desc { font-size: 0.8rem; color: var(--muted); line-height: 1.6; }
+  .resource-arrow {
+    display: inline-block; margin-top: 0.7rem;
+    font-size: 0.78rem; color: var(--accent);
+    transition: transform 0.2s;
+  }
+  .resource-card:hover .resource-arrow { transform: translateX(4px); }
+
+  /* NEWSLETTER */
+  .newsletter-section {
+    text-align: center;
+    background: linear-gradient(135deg, rgba(124,106,247,0.08), rgba(79,209,197,0.04));
+    border-top: 1px solid rgba(124,106,247,0.15);
+    border-bottom: 1px solid rgba(124,106,247,0.15);
+  }
+  .newsletter-form {
+    display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap;
+    margin-top: 1.5rem;
+  }
+  .newsletter-form input {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    color: var(--text);
+    padding: 0.8rem 1.4rem;
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    width: 300px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .newsletter-form input:focus { border-color: var(--accent); }
+  .newsletter-form input::placeholder { color: var(--muted); }
+
+  /* CTA */
+  .cta-section {
+    text-align: center; padding: 8rem 2rem;
+    position: relative; overflow: hidden;
+  }
+  .cta-section::before {
+    content:'';
+    position:absolute;
+    top:50%; left:50%; transform:translate(-50%,-50%);
+    width:700px; height:700px; border-radius:50%;
+    background: radial-gradient(circle, rgba(124,106,247,0.15) 0%, transparent 70%);
+    pointer-events:none;
+  }
+  .cta-section h2 { margin-bottom: 1rem; position:relative;z-index:1; }
+  .cta-section p { color:var(--muted); margin-bottom:2rem; position:relative;z-index:1; font-size:1.05rem; }
+  .cta-section .hero-actions { animation: none; }
+
+  /* FOOTER */
+  footer {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    padding: 3.5rem 4rem 2rem;
+    display: flex; flex-direction: column; gap: 2.5rem;
+  }
+  .footer-top { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 2rem; }
+  .footer-brand .logo { display:block; margin-bottom:0.8rem; font-size: 1.3rem; }
+  .footer-brand p { color:var(--muted); font-size:0.83rem; max-width:250px; line-height:1.65; }
+  .footer-social { display: flex; gap: 0.75rem; margin-top: 1rem; }
+  .social-btn {
+    width: 34px; height: 34px; border-radius: 8px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.9rem; text-decoration: none;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .social-btn:hover { background: rgba(124,106,247,0.15); border-color: rgba(124,106,247,0.3); }
+  .footer-links { display: flex; gap: 4rem; flex-wrap: wrap; }
+  .footer-col h4 { font-family:'Syne',sans-serif; font-size:0.82rem; font-weight:700; margin-bottom:1rem; color:var(--text); }
+  .footer-col a { display:block; color:var(--muted); text-decoration:none; font-size:0.82rem; margin-bottom:0.6rem; transition:color 0.2s; }
+  .footer-col a:hover { color:var(--accent); }
+  .footer-bottom {
+    border-top:1px solid var(--border); padding-top:1.5rem;
+    display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;
+    color:var(--muted); font-size:0.78rem;
+  }
+  .tech-pills { display:flex; flex-wrap:wrap; gap:0.5rem; }
+  .pill {
+    background:rgba(255,255,255,0.04); border:1px solid var(--border);
+    border-radius:50px; padding:0.22rem 0.75rem;
+    font-size:0.68rem; color:var(--muted);
+  }
+
+  /* AI CHAT WIDGET */
+  .chat-fab {
+    position: fixed; bottom: 2rem; right: 2rem; z-index: 200;
+    width: 58px; height: 58px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), #5a4ed4);
+    border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.5rem;
+    box-shadow: 0 8px 30px rgba(124,106,247,0.5);
+    transition: transform 0.25s, box-shadow 0.25s;
+  }
+  .chat-fab:hover { transform: scale(1.08); box-shadow: 0 12px 40px rgba(124,106,247,0.65); }
+  .chat-fab .chat-pulse {
+    position: absolute; top: -2px; right: -2px;
+    width: 14px; height: 14px; border-radius: 50%;
+    background: var(--accent2);
+    border: 2px solid var(--bg);
+    animation: blink 2s ease infinite;
+  }
+  .chat-window {
+    position: fixed; bottom: 6rem; right: 2rem; z-index: 200;
+    width: 360px; height: 520px;
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 20px;
+    display: flex; flex-direction: column;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+    overflow: hidden;
+    transform: scale(0.85) translateY(20px);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .chat-window.open {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+    pointer-events: all;
+  }
+  .chat-header {
+    padding: 1rem 1.2rem;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 0.75rem;
+  }
+  .chat-avatar {
+    width: 34px; height: 34px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem;
+  }
+  .chat-header-info { flex: 1; }
+  .chat-header-name { font-size: 0.85rem; font-weight: 600; }
+  .chat-header-status { font-size: 0.68rem; color: var(--accent2); }
+  .chat-close { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 1.1rem; padding: 0.2rem; transition: color 0.2s; }
+  .chat-close:hover { color: var(--text); }
+  .chat-messages {
+    flex: 1; overflow-y: auto; padding: 1rem;
+    display: flex; flex-direction: column; gap: 0.75rem;
+    scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+  }
+  .chat-messages::-webkit-scrollbar { width: 4px; }
+  .chat-messages::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+  .chat-msg {
+    max-width: 82%;
+    padding: 0.65rem 0.95rem;
+    border-radius: 14px;
+    font-size: 0.83rem;
+    line-height: 1.55;
+    animation: msgPop 0.25s ease both;
+  }
+  @keyframes msgPop { from{opacity:0;transform:translateY(8px);} }
+  .chat-msg.bot {
+    background: var(--surface2);
+    border-radius: 14px 14px 14px 4px;
+    color: var(--text);
+    align-self: flex-start;
+  }
+  .chat-msg.user {
+    background: linear-gradient(135deg, var(--accent), #5a4ed4);
+    border-radius: 14px 14px 4px 14px;
+    color: #fff;
+    align-self: flex-end;
+  }
+  .chat-typing {
+    display: flex; gap: 4px; align-items: center;
+    padding: 0.65rem 0.95rem;
+    background: var(--surface2);
+    border-radius: 14px 14px 14px 4px;
+    width: fit-content;
+    align-self: flex-start;
+  }
+  .typing-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--muted);
+    animation: typingBounce 1.2s ease infinite;
+  }
+  .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes typingBounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-6px);background:var(--accent2);} }
+  .chat-footer {
+    padding: 0.85rem 1rem;
+    border-top: 1px solid var(--border);
+    display: flex; gap: 0.6rem;
+  }
+  .chat-input {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    color: var(--text);
+    padding: 0.6rem 0.9rem;
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .chat-input:focus { border-color: var(--accent); }
+  .chat-input::placeholder { color: var(--muted); }
+  .chat-send {
+    background: var(--accent);
+    border: none; color: #fff;
+    width: 36px; height: 36px; border-radius: 10px;
+    cursor: pointer; font-size: 0.95rem;
+    display: flex; align-items: center; justify-content: center;
+    transition: opacity 0.2s, transform 0.2s;
+    flex-shrink: 0;
+  }
+  .chat-send:hover { opacity: 0.85; transform: scale(1.05); }
+  .chat-suggestions {
+    display: flex; gap: 0.5rem; flex-wrap: wrap;
+    padding: 0 1rem 0.75rem;
+  }
+  .chat-suggestion {
+    background: rgba(124,106,247,0.1);
+    border: 1px solid rgba(124,106,247,0.2);
+    color: var(--accent2);
+    font-size: 0.72rem; padding: 0.3rem 0.7rem;
+    border-radius: 50px; cursor: pointer;
+    transition: background 0.2s;
+    white-space: nowrap;
+  }
+  .chat-suggestion:hover { background: rgba(124,106,247,0.2); }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp {
+    from { opacity:0; transform:translateY(24px); }
+    to { opacity:1; transform:translateY(0); }
+  }
+  .reveal {
+    opacity: 0; transform: translateY(28px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  /* RESPONSIVE */
+  @media (max-width: 768px) {
+    nav { padding: 1rem 1.5rem; }
+    nav ul { display:none; }
+    .dash-body { grid-template-columns: 1fr; }
+    .dash-sidebar { display:none; }
+    .dash-row { grid-template-columns: 1fr 1fr; }
+    .footer-top { flex-direction:column; }
+    .footer-links { flex-direction:column; gap:1.5rem; }
+    footer { padding:2rem 1.5rem; }
+    .chat-window { width: calc(100vw - 2rem); right: 1rem; bottom: 5.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ANNOUNCEMENT BAR -->
+<div class="announce-bar" style="margin-top:0;">
+  🎉 NeuroNest v2.0 is live! AI-powered focus coaching now available. <a href="#pricing">See plans →</a>
+</div>
+
+<!-- NAV -->
+<nav id="mainNav">
+  <div class="logo">Neuro<span>Nest</span></div>
+  <ul>
+    <li><a href="#features">Features</a></li>
+    <li><a href="#integrations">Integrations</a></li>
+    <li><a href="#how">How it works</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+    <li><a href="#resources">Resources</a></li>
+    <li><a href="neuronest-auth.html" class="nav-cta">Get Started</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-orb orb1"></div>
+  <div class="hero-orb orb2"></div>
+  <div class="hero-orb orb3"></div>
+
+  <div class="hero-badge">
+    <div class="dot"></div>
+    v2.0 Now Live — AI Focus Coaching Included
+  </div>
+
+  <h1>Your Mind.<br><span class="gradient-text">Engineered</span> to Focus.</h1>
+  <p class="hero-sub">NeuroNest analyzes your habits, builds AI-personalized focus routines, and turns productivity into a rewarding daily ritual.</p>
+  <div class="hero-actions">
+    <a href="neuronest-auth.html" class="btn-primary">🚀 Start for Free</a>
+    <a href="#features" class="btn-secondary">See Features →</a>
+  </div>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-num" data-target="8400">0</div>
+      <div class="stat-label">Active Users</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num" data-target="98">0</div>
+      <div class="stat-label">% Satisfaction</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num" data-target="520">0</div>
+      <div class="stat-label">K Focus Hours Logged</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num" data-target="14">0</div>
+      <div class="stat-label">Habit Modules</div>
+    </div>
+  </div>
+</section>
+
+<!-- DASHBOARD PREVIEW -->
+<div class="preview-section">
+  <div class="dashboard-preview">
+    <div class="dash-titlebar">
+      <div class="dot-red"></div>
+      <div class="dot-yellow"></div>
+      <div class="dot-green"></div>
+      <div class="dash-url">app.neuronest.io/dashboard</div>
+    </div>
+    <div class="dash-body">
+      <div class="dash-sidebar">
+        <div class="user-info">
+          <div class="avatar">AK</div>
+          <div>
+            <div class="user-name">Muhammad Talha Tariq</div>
+            <div class="user-level">⚡ Focus Pro</div>
+          </div>
+        </div>
+        <div class="nav-item active">📊 Dashboard</div>
+        <div class="nav-item">⏱️ Focus Timer</div>
+        <div class="nav-item">🌿 Habits</div>
+        <div class="nav-item">📈 Analytics</div>
+        <div class="nav-item">🤖 AI Coach</div>
+        <div class="nav-item">🚫 Distractions</div>
+        <div class="nav-item">🏆 Rewards</div>
+        <div class="nav-item">⚙️ Settings</div>
+      </div>
+      <div class="dash-main">
+        <div class="dash-row">
+          <div class="stat-card">
+            <div class="stat-card-label">Today's Focus</div>
+            <div class="stat-card-value v1">4.2h</div>
+            <div class="stat-card-sub">↑ 18% vs yesterday</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-label">Streak</div>
+            <div class="stat-card-value v2">🔥 14</div>
+            <div class="stat-card-sub">Days in a row</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-label">Focus Score</div>
+            <div class="stat-card-value v3">87</div>
+            <div class="stat-card-sub">Top 12% this week</div>
+          </div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Weekly Focus Hours</div>
+          <div class="bar-chart">
+            <div class="bar"></div><div class="bar"></div>
+            <div class="bar"></div><div class="bar"></div>
+            <div class="bar"></div><div class="bar"></div>
+            <div class="bar"></div>
+          </div>
+          <div class="bar-labels">
+            <span>Mon</span><span>Tue</span><span>Wed</span>
+            <span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+          </div>
+        </div>
+        <div class="timer-card">
+          <div class="timer-ring">24:13</div>
+          <div class="timer-info">
+            <h4>Deep Focus Session</h4>
+            <p>React & Node.js — Session 2 of 4</p>
+            <div class="progress-bar-bg"><div class="progress-bar-fill"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="section-label">Core Features</div>
+  <h2>Everything you need to<br>master your focus</h2>
+  <p class="section-sub">Eight powerful modules working together to build an unstoppable productivity system.</p>
+  <div class="features-grid">
+    <div class="feature-card reveal">
+      <div class="feature-icon icon-purple">📊</div>
+      <h3>Smart Analytics Dashboard</h3>
+      <p>Visual breakdowns of your daily focus time, weekly productivity graphs, habit streaks, and a dynamic focus score updated in real time.</p>
+      <a href="https://www.researchgate.net/publication/analytics-productivity" target="_blank" class="feature-link">Learn about focus analytics →</a>
+    </div>
+    <div class="feature-card reveal">
+      <div class="feature-icon icon-teal">⏱️</div>
+      <h3>Deep Focus Timer</h3>
+      <p>A beautiful fullscreen Pomodoro-style timer with ambient soundscapes, custom session lengths, and complete session history. Based on proven time-boxing research.</p>
+      <a href="https://en.wikipedia.org/wiki/Pomodoro_Technique" target="_blank" class="feature-link">About Pomodoro Technique →</a>
+    </div>
+    <div class="feature-card reveal">
+      <div class="feature-icon icon-yellow">🤖</div>
+      <h3>AI Focus Coach</h3>
+      <p>Get personalized productivity advice powered by AI. Ask questions, get schedule recommendations, and receive weekly AI-generated performance summaries.</p>
+      <a href="#chat-widget" class="feature-link" onclick="openChat()">Try AI Coach now →</a>
+    </div>
+    <div class="feature-card reveal">
+      <div class="feature-icon icon-green">🌿</div>
+      <h3>AI-Inspired Habit Builder</h3>
+      <p>Select your goal — study, gym, reading, coding — and NeuroNest auto-generates a daily plan with time blocks and smart reminders aligned to your chronotype.</p>
+      <a href="https://jamesclear.com/atomic-habits" target="_blank" class="feature-link">Atomic Habits method →</a>
+    </div>
+    <div class="feature-card reveal">
+      <div class="feature-icon icon-pink">🚫</div>
+      <h3>Distraction Awareness</h3>
+      <p>Log distracting apps and sites. The system tracks how often you stray and delivers ethical weekly distraction reports — no spying, always transparent.</p>
+      <a href="https://www.rescuetime.com" target="_blank" class="feature-link">Compare with RescueTime →</a>
+    </div>
+    <div class="feature-card reveal">
+      <div class="feature-icon icon-blue">🏆</div>
+      <h3>Gamification Layer</h3>
+      <p>Earn focus points, unlock streak badges, and climb productivity levels. Making consistency feel as rewarding and addictive as a great game.</p>
+    </div>
+    <div class="feature-card reveal">
+      <div class="feature-icon icon-orange">🎵</div>
+      <h3>Focus Soundscapes</h3>
+      <p>Curated ambient audio — lo-fi beats, white noise, binaural frequencies — scientifically selected to enhance deep work. Integrated with Spotify playlists.</p>
+      <a href="https://open.spotify.com/playlist/0vvXsWCC9xrXsKd4eVroXP" target="_blank" class="feature-link">Try lo-fi focus playlist →</a>
+    </div>
+    <div class="feature-card reveal">
+      <div class="feature-icon icon-red">📱</div>
+      <h3>Full Mobile App</h3>
+      <p>Native iOS & Android apps with offline mode, widget support, and push notification reminders. Your focus companion everywhere you go.</p>
+      <a href="https://play.google.com" target="_blank" class="feature-link">Coming to Play Store →</a>
+    </div>
+  </div>
+</section>
+
+<!-- INTEGRATIONS -->
+<section id="integrations" class="integrations-section">
+  <div class="section-label">Integrations</div>
+  <h2>Works with your<br>favorite tools</h2>
+  <p class="section-sub">NeuroNest connects seamlessly with the apps you already use every day.</p>
+  <div class="integrations-grid">
+    <a href="https://notion.so" target="_blank" class="integration-card">
+      <span class="integration-icon">📓</span>
+      <div class="integration-name">Notion</div>
+      <div class="integration-type">Notes & Tasks</div>
+      <span class="integration-badge">Connected</span>
+    </a>
+    <a href="https://todoist.com" target="_blank" class="integration-card">
+      <span class="integration-icon">✅</span>
+      <div class="integration-name">Todoist</div>
+      <div class="integration-type">Task Manager</div>
+      <span class="integration-badge">Connected</span>
+    </a>
+    <a href="https://calendar.google.com" target="_blank" class="integration-card">
+      <span class="integration-icon">📅</span>
+      <div class="integration-name">Google Calendar</div>
+      <div class="integration-type">Scheduling</div>
+      <span class="integration-badge">Connected</span>
+    </a>
+    <a href="https://open.spotify.com" target="_blank" class="integration-card">
+      <span class="integration-icon">🎵</span>
+      <div class="integration-name">Spotify</div>
+      <div class="integration-type">Focus Music</div>
+      <span class="integration-badge">Connected</span>
+    </a>
+    <a href="https://slack.com" target="_blank" class="integration-card">
+      <span class="integration-icon">💬</span>
+      <div class="integration-name">Slack</div>
+      <div class="integration-type">Notifications</div>
+      <span class="integration-badge">Beta</span>
+    </a>
+    <a href="https://github.com" target="_blank" class="integration-card">
+      <span class="integration-icon">🐙</span>
+      <div class="integration-name">GitHub</div>
+      <div class="integration-type">Code Activity</div>
+      <span class="integration-badge">Beta</span>
+    </a>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how" class="hiw-bg">
+  <div class="section-label">How It Works</div>
+  <h2>Simple. Powerful. Yours.</h2>
+  <p class="section-sub">Five steps to transform how you study and work.</p>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">01</div>
+      <div>
+        <h3>Create Your Profile</h3>
+        <p>Sign up in seconds. Choose your goals — studying, fitness, creative work — and let NeuroNest build your personal focus blueprint using habit science principles from <a href="https://jamesclear.com" target="_blank" style="color:var(--accent2)">James Clear's Atomic Habits</a>.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">02</div>
+      <div>
+        <h3>Connect Your Apps</h3>
+        <p>Link Notion, Todoist, Google Calendar, and Spotify. NeuroNest pulls your tasks and syncs your schedule automatically — no duplicate data entry.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <div>
+        <h3>Log Focus Sessions</h3>
+        <p>Start a timer, work in deep focus, and log every session. The more you log, the smarter your AI coach becomes at predicting your best hours.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">04</div>
+      <div>
+        <h3>Track Habits & Distractions</h3>
+        <p>Mark daily habits complete and flag distractions. NeuroNest spots your patterns and helps you neutralize them — using techniques from <a href="https://www.healthline.com/health/cognitive-behavioral-therapy" target="_blank" style="color:var(--accent2)">Cognitive Behavioral Therapy</a>.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">05</div>
+      <div>
+        <h3>Earn Rewards & Improve</h3>
+        <p>Watch your focus score rise, collect badges, and receive AI-generated weekly reports showing exactly how far you've come.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- GAMIFICATION -->
+<section id="gamify">
+  <div class="section-label">Gamification</div>
+  <h2>Earn while you learn</h2>
+  <p class="section-sub">Consistency deserves to be celebrated. Unlock achievements as you build your best self.</p>
+  <div class="badges-row">
+    <div class="badge-card"><span class="badge-emoji">🔥</span><div class="badge-name">7-Day Streak</div><div class="badge-desc">Focus 7 days in a row</div></div>
+    <div class="badge-card"><span class="badge-emoji">⚡</span><div class="badge-name">Speed Run</div><div class="badge-desc">4 sessions in one day</div></div>
+    <div class="badge-card"><span class="badge-emoji">🧘</span><div class="badge-name">Zen Master</div><div class="badge-desc">Zero distractions in a week</div></div>
+    <div class="badge-card"><span class="badge-emoji">🏔️</span><div class="badge-name">Summit</div><div class="badge-desc">100 total focus hours</div></div>
+    <div class="badge-card"><span class="badge-emoji">🌙</span><div class="badge-name">Night Owl</div><div class="badge-desc">10 PM late sessions</div></div>
+    <div class="badge-card"><span class="badge-emoji">📚</span><div class="badge-name">Scholar</div><div class="badge-desc">30-day study habit</div></div>
+    <div class="badge-card"><span class="badge-emoji">🤖</span><div class="badge-name">AI Apprentice</div><div class="badge-desc">10 AI coach sessions</div></div>
+    <div class="badge-card"><span class="badge-emoji">🌍</span><div class="badge-name">Global Top 1%</div><div class="badge-desc">Reach elite focus rank</div></div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section id="testimonials" style="background: var(--surface);">
+  <div class="section-label">Testimonials</div>
+  <h2>Loved by students<br>& professionals</h2>
+  <p class="section-sub">Real stories from real users who transformed their productivity.</p>
+  <div class="testimonials-grid">
+    <div class="testimonial-card reveal">
+      <div class="stars">★★★★★</div>
+      <div class="testimonial-text">"NeuroNest completely changed how I study for my BSCS exams. My focus sessions went from 45 minutes to 3+ hours. The streak system is genuinely addictive."</div>
+      <div class="testimonial-author">
+        <div class="t-avatar" style="background:rgba(124,106,247,0.2);color:var(--accent)">AK</div>
+        <div><div class="t-name">Muhammad Talha Tariq</div><div class="t-role">Website Developers</div></div>
+      </div>
+    
+      
+    </div>
+    <div class="testimonial-card reveal">
+      <div class="stars">★★★★★</div>
+      <div class="testimonial-text">"I've tried Notion, Todoist, Forest — nothing stuck. NeuroNest gamifies everything in a way that actually motivates me. Earned the Summit badge last month!"</div>
+      <div class="testimonial-author">
+        <div class="t-avatar" style="background:rgba(246,201,14,0.2);color:var(--accent3)">ZM</div>
+        <div><div class="t-name">Muhammad Usman</div><div class="t-role">Software Engineer</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing">
+  <div class="section-label">Pricing</div>
+  <h2>Simple, honest pricing</h2>
+  <p class="section-sub">Start free. Upgrade when you're ready. No hidden fees, ever.</p>
+  <div class="pricing-grid">
+    <div class="pricing-card reveal">
+      <div class="pricing-plan">Free</div>
+      <div class="pricing-price">$0</div>
+      <div class="pricing-period">forever free</div>
+      <ul class="pricing-features">
+        <li>5 focus sessions / day</li>
+        <li>Basic habit tracker</li>
+        <li>7-day analytics</li>
+        <li>3 achievement badges</li>
+        <li class="disabled">AI Focus Coach</li>
+        <li class="disabled">App integrations</li>
+        <li class="disabled">Focus Soundscapes</li>
+      </ul>
+      <a href="neuronest-auth.html" class="btn-secondary" style="display:block;text-align:center;">Get Started Free</a>
+    </div>
+    <div class="pricing-card featured reveal">
+      <div class="pricing-badge">MOST POPULAR</div>
+      <div class="pricing-plan">Pro</div>
+      <div class="pricing-price">$5</div>
+      <div class="pricing-period">per month · billed annually</div>
+      <ul class="pricing-features">
+        <li>Unlimited focus sessions</li>
+        <li>Full habit builder</li>
+        <li>90-day analytics</li>
+        <li>All 20+ badges</li>
+        <li>AI Focus Coach (unlimited)</li>
+        <li>All app integrations</li>
+        <li>Focus Soundscapes library</li>
+      </ul>
+      <a href="neuronest-auth.html" class="btn-primary" style="display:block;text-align:center;">Start Pro Trial</a>
+    </div>
+    <div class="pricing-card reveal">
+      <div class="pricing-plan">Student</div>
+      <div class="pricing-price">Free</div>
+      <div class="pricing-period">with valid .edu email</div>
+      <ul class="pricing-features">
+        <li>Everything in Pro</li>
+        <li>Study mode templates</li>
+        <li>Exam countdown timer</li>
+        <li>Group study rooms</li>
+        <li>University leaderboards</li>
+        <li>Priority support</li>
+        <li>No credit card needed</li>
+      </ul>
+      <a href="neuronest-auth.html" class="btn-secondary" style="display:block;text-align:center;">Claim Student Plan</a>
+    </div>
+  </div>
+</section>
+
+<!-- RESOURCES / LINKS -->
+<section id="resources" class="resources-section">
+  <div class="section-label">Resources & Links</div>
+  <h2>Learn the science<br>behind focus</h2>
+  <p class="section-sub">NeuroNest is built on real science. Explore the research and tools that inspired it.</p>
+  <div class="resources-grid">
+    <a href="https://jamesclear.com/atomic-habits" target="_blank" class="resource-card reveal">
+      <div class="resource-card-top">
+        <span class="resource-icon">📗</span>
+        <span class="resource-label">Book</span>
+      </div>
+      <div class="resource-name">Atomic Habits</div>
+      <div class="resource-desc">James Clear's definitive guide on building habits that stick — the foundation of NeuroNest's habit module.</div>
+      <div class="resource-arrow">→ jamesclear.com</div>
+    </a>
+    <a href="https://en.wikipedia.org/wiki/Pomodoro_Technique" target="_blank" class="resource-card reveal">
+      <div class="resource-card-top">
+        <span class="resource-icon">⏱️</span>
+        <span class="resource-label">Technique</span>
+      </div>
+      <div class="resource-name">Pomodoro Technique</div>
+      <div class="resource-desc">The time-boxing method our Focus Timer is based on — 25-minute focused sprints with structured breaks.</div>
+      <div class="resource-arrow">→ wikipedia.org</div>
+    </a>
+    <a href="https://www.hubermanlab.com/topics/focus-and-concentration" target="_blank" class="resource-card reveal">
+      <div class="resource-card-top">
+        <span class="resource-icon">🧠</span>
+        <span class="resource-label">Science</span>
+      </div>
+      <div class="resource-name">Huberman Lab: Focus</div>
+      <div class="resource-desc">Dr. Andrew Huberman's neuroscience-backed protocols for maximizing concentration and mental performance.</div>
+      <div class="resource-arrow">→ hubermanlab.com</div>
+    </a>
+    <a href="https://www.rescuetime.com/blog/category/time-management/" target="_blank" class="resource-card reveal">
+      <div class="resource-card-top">
+        <span class="resource-icon">📊</span>
+        <span class="resource-label">Blog</span>
+      </div>
+      <div class="resource-name">RescueTime Blog</div>
+      <div class="resource-desc">In-depth articles on time management, distraction research, and productivity data from millions of users.</div>
+      <div class="resource-arrow">→ rescuetime.com</div>
+    </a>
+    <a href="https://calnewport.com/blog/" target="_blank" class="resource-card reveal">
+      <div class="resource-card-top">
+        <span class="resource-icon">🎯</span>
+        <span class="resource-label">Blog</span>
+      </div>
+      <div class="resource-name">Cal Newport: Deep Work</div>
+      <div class="resource-desc">The author of "Deep Work" shares strategies for achieving flow state and producing high-quality output.</div>
+      <div class="resource-arrow">→ calnewport.com</div>
+    </a>
+    <a href="https://todoist.com/productivity-methods" target="_blank" class="resource-card reveal">
+      <div class="resource-card-top">
+        <span class="resource-icon">✅</span>
+        <span class="resource-label">Methods</span>
+      </div>
+      <div class="resource-name">Todoist Productivity Guide</div>
+      <div class="resource-desc">A comprehensive library of productivity frameworks including GTD, Time Blocking, and Eat the Frog.</div>
+      <div class="resource-arrow">→ todoist.com</div>
+    </a>
+    <a href="https://www.healthline.com/health/mental-health/flow-state" target="_blank" class="resource-card reveal">
+      <div class="resource-card-top">
+        <span class="resource-icon">🌊</span>
+        <span class="resource-label">Research</span>
+      </div>
+      <div class="resource-name">Flow State Science</div>
+      <div class="resource-desc">Mihaly Csikszentmihalyi's research on achieving flow — the mental state NeuroNest helps you enter consistently.</div>
+      <div class="resource-arrow">→ healthline.com</div>
+    </a>
+    <a href="https://www.coursera.org/learn/learning-how-to-learn" target="_blank" class="resource-card reveal">
+      <div class="resource-card-top">
+        <span class="resource-icon">🎓</span>
+        <span class="resource-label">Course</span>
+      </div>
+      <div class="resource-name">Learning How to Learn</div>
+      <div class="resource-desc">The world's most enrolled online course on Coursera, covering neuroscience of memory, focus, and effective study techniques.</div>
+      <div class="resource-arrow">→ coursera.org</div>
+    </a>
+  </div>
+</section>
+
+<!-- NEWSLETTER -->
+<section class="newsletter-section" style="padding: 5rem 2rem;">
+  <div class="section-label">Stay Updated</div>
+  <h2>Weekly Focus Tips</h2>
+  <p class="section-sub" style="margin-bottom: 0;">Get science-backed productivity tips, new feature announcements, and focus challenges delivered every Monday.</p>
+  <div class="newsletter-form">
+    <input type="email" placeholder="your@email.com" id="newsletterEmail">
+    <button class="btn-primary" onclick="subscribeNewsletter()">Subscribe Free</button>
+  </div>
+  <p style="font-size:0.72rem;color:var(--muted);margin-top:0.8rem;">No spam. Unsubscribe anytime. Trusted by 8,400+ users.</p>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <h2>Ready to rewire<br>your <span class="gradient-text">focus</span>?</h2>
+  <p>Join thousands of students and professionals crushing their goals with NeuroNest.</p>
+  <div class="hero-actions">
+    <a href="neuronest-auth.html" class="btn-primary">🚀 Get Started Free</a>
+    <a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ" target="_blank" class="btn-secondary">▶ Watch Demo</a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-top">
+    <div class="footer-brand">
+      <div class="logo">Neuro<span>Nest</span></div>
+      <p>The intelligent habit and focus ecosystem for ambitious students and professionals.</p>
+      <div class="footer-social">
+        <a href="https://twitter.com" target="_blank" class="social-btn" title="Twitter">𝕏</a>
+        <a href="https://github.com" target="_blank" class="social-btn" title="GitHub">⑂</a>
+        <a href="https://linkedin.com" target="_blank" class="social-btn" title="LinkedIn">in</a>
+        <a href="https://instagram.com" target="_blank" class="social-btn" title="Instagram">◯</a>
+      </div>
+    </div>
+    <div class="footer-links">
+      <div class="footer-col">
+        <h4>Product</h4>
+        <a href="#">Dashboard</a>
+        <a href="#">Focus Timer</a>
+        <a href="#">AI Coach</a>
+        <a href="#">Habit Builder</a>
+        <a href="#">Analytics</a>
+        <a href="#">Integrations</a>
+      </div>
+      <div class="footer-col">
+        <h4>Resources</h4>
+        <a href="https://jamesclear.com/atomic-habits" target="_blank">Atomic Habits</a>
+        <a href="https://en.wikipedia.org/wiki/Pomodoro_Technique" target="_blank">Pomodoro Technique</a>
+        <a href="https://calnewport.com" target="_blank">Deep Work</a>
+        <a href="https://hubermanlab.com" target="_blank">Huberman Lab</a>
+        <a href="https://www.coursera.org/learn/learning-how-to-learn" target="_blank">Learning Course</a>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <a href="#">About</a>
+        <a href="#">Blog</a>
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms of Use</a>
+        <a href="mailto:hello@neuronest.io">Contact</a>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2025 NeuroNest. Built for BSCS Final Project · Lahore, Pakistan 🇵🇰</span>
+    <div class="tech-pills">
+      <span class="pill">React</span>
+      <span class="pill">Node.js</span>
+      <span class="pill">Express</span>
+      <span class="pill">MySQL</span>
+      <span class="pill">REST API</span>
+      <span class="pill">JWT Auth</span>
+      <span class="pill">Claude AI</span>
+    </div>
+  </div>
+</footer>
+
+<!-- AI CHAT FAB -->
+<button class="chat-fab" onclick="toggleChat()" title="AI Focus Coach">
+  🤖
+  <div class="chat-pulse"></div>
+</button>
+
+<!-- AI CHAT WINDOW -->
+<div class="chat-window" id="chatWindow">
+  <div class="chat-header">
+    <div class="chat-avatar">🤖</div>
+    <div class="chat-header-info">
+      <div class="chat-header-name">NeuroNest AI Coach</div>
+      <div class="chat-header-status">● Online — powered by Claude AI</div>
+    </div>
+    <button class="chat-close" onclick="toggleChat()">✕</button>
+  </div>
+  <div class="chat-messages" id="chatMessages">
+    <div class="chat-msg bot">👋 Hi! I'm your NeuroNest AI Focus Coach. Ask me anything about productivity, habits, or focus strategies!</div>
+  </div>
+  <div class="chat-suggestions" id="chatSuggestions">
+    <div class="chat-suggestion" onclick="sendSuggestion(this)">How do I improve focus?</div>
+    <div class="chat-suggestion" onclick="sendSuggestion(this)">Best study techniques?</div>
+    <div class="chat-suggestion" onclick="sendSuggestion(this)">Fix my sleep schedule</div>
+  </div>
+  <div class="chat-footer">
+    <input class="chat-input" id="chatInput" placeholder="Ask about focus, habits, productivity..." onkeypress="handleChatKey(event)">
+    <button class="chat-send" onclick="sendMessage()">➤</button>
+  </div>
+</div>
+
+<script>
+  // NAV scroll effect
+  const nav = document.getElementById('mainNav');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('scrolled', window.scrollY > 60);
+  });
+
+  // Counter animation
+  function animateCounters() {
+    document.querySelectorAll('.stat-num[data-target]').forEach(el => {
+      const target = parseInt(el.dataset.target);
+      let suffix = '+';
+      if (target === 98) suffix = '%';
+      let current = 0;
+      const increment = target / 60;
+      const timer = setInterval(() => {
+        current = Math.min(current + increment, target);
+        el.textContent = Math.floor(current) + (current >= target ? suffix : '');
+        if (current >= target) clearInterval(timer);
+      }, 22);
+    });
+  }
+
+  // Intersection observer for reveals
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) entry.target.classList.add('visible');
+    });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.step, .reveal').forEach(el => observer.observe(el));
+
+  const statsObs = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) { animateCounters(); statsObs.disconnect(); }
+    });
+  }, { threshold: 0.4 });
+  const statsEl = document.querySelector('.stats');
+  if (statsEl) statsObs.observe(statsEl);
+
+  // Nav highlight
+  const sections = document.querySelectorAll('section[id]');
+  const navLinks = document.querySelectorAll('nav ul a[href^="#"]');
+  window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(sec => { if (window.scrollY >= sec.offsetTop - 200) current = sec.id; });
+    navLinks.forEach(link => {
+      link.style.color = link.getAttribute('href') === '#'+current ? 'var(--text)' : '';
+    });
+  });
+
+  // NEWSLETTER
+  function subscribeNewsletter() {
+    const email = document.getElementById('newsletterEmail').value;
+    if (!email || !email.includes('@')) {
+      alert('Please enter a valid email!');
+      return;
+    }
+    alert(`🎉 You're subscribed! Check ${email} for your first focus tips.`);
+    document.getElementById('newsletterEmail').value = '';
+  }
+
+  // AI CHAT
+  let chatOpen = false;
+  function toggleChat() {
+    chatOpen = !chatOpen;
+    document.getElementById('chatWindow').classList.toggle('open', chatOpen);
+  }
+  function openChat() {
+    chatOpen = true;
+    document.getElementById('chatWindow').classList.add('open');
+  }
+
+  function handleChatKey(e) { if (e.key === 'Enter') sendMessage(); }
+
+  function sendSuggestion(el) {
+    document.getElementById('chatInput').value = el.textContent;
+    document.getElementById('chatSuggestions').style.display = 'none';
+    sendMessage();
+  }
+
+  async function sendMessage() {
+    const input = document.getElementById('chatInput');
+    const messages = document.getElementById('chatMessages');
+    const text = input.value.trim();
+    if (!text) return;
+    input.value = '';
+
+    // User message
+    const userMsg = document.createElement('div');
+    userMsg.className = 'chat-msg user';
+    userMsg.textContent = text;
+    messages.appendChild(userMsg);
+
+    // Typing indicator
+    const typing = document.createElement('div');
+    typing.className = 'chat-typing';
+    typing.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
+    messages.appendChild(typing);
+    messages.scrollTop = messages.scrollHeight;
+
+    try {
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-6',
+          max_tokens: 1000,
+          system: `You are NeuroNest AI Focus Coach — a friendly, science-backed productivity coach built into the NeuroNest app. You help users with focus techniques, habit building, study strategies, time management, and overcoming procrastination. Keep responses concise (2-4 sentences), warm, and actionable. Occasionally reference real techniques like Pomodoro, Atomic Habits, Deep Work, or Huberman Lab protocols. Always be encouraging. End with one actionable tip.`,
+          messages: [{ role: 'user', content: text }]
+        })
+      });
+      const data = await response.json();
+      typing.remove();
+      const botMsg = document.createElement('div');
+      botMsg.className = 'chat-msg bot';
+      botMsg.textContent = data.content?.[0]?.text || "Great question! Try breaking your task into 25-minute Pomodoro sessions with 5-minute breaks. Start with your hardest task first when your willpower is highest. 💪";
+      messages.appendChild(botMsg);
+    } catch(e) {
+      typing.remove();
+      const botMsg = document.createElement('div');
+      botMsg.className = 'chat-msg bot';
+      botMsg.textContent = "💡 Try the 2-Minute Rule: if a task takes less than 2 minutes, do it now. For longer tasks, use Pomodoro sessions — 25 minutes focused, then a 5-minute break. Consistency over intensity!";
+      messages.appendChild(botMsg);
+    }
+    messages.scrollTop = messages.scrollHeight;
+  }
+</script>
+</body>
+</html>
